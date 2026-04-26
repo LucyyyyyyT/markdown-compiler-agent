@@ -11,13 +11,14 @@ def compile_heading(line):
     '<h2>World</h2>'
     >>> compile_heading('### Test')
     '<h3>Test</h3>'
-    >>> compile_heading('Not a heading')
+    >>> compile_heading('Not a heading') is None
+    True
     """
     match = re.match(r'^(#{1,3})\s+(.+)$', line)
     if match:
         level = len(match.group(1))
         text = match.group(2)
-        return f'<h{level}>{text}</h{level}>'
+        return '<h{0}>{1}</h{0}>'.format(level, text)
     return None
 
 
@@ -83,12 +84,13 @@ def compile_list_item(line):
     '<li>item</li>'
     >>> compile_list_item('- **bold** item')
     '<li><strong>bold</strong> item</li>'
-    >>> compile_list_item('not a list')
+    >>> compile_list_item('not a list') is None
+    True
     """
     match = re.match(r'^-\s+(.+)$', line)
     if match:
         content = compile_inline(match.group(1))
-        return f'<li>{content}</li>'
+        return '<li>{0}</li>'.format(content)
     return None
 
 
@@ -106,7 +108,7 @@ def is_list_item(line):
 
 
 def compile(markdown):
-    r"""Convert markdown text to HTML.
+    """Convert markdown text to HTML.
 
     >>> compile('# Hello')
     '<h1>Hello</h1>'
@@ -120,11 +122,11 @@ def compile(markdown):
     '<p><em>italic</em></p>'
     >>> compile('[link](url)')
     '<p><a href="url">link</a></p>'
-    >>> compile('- item1\n- item2')
+    >>> compile('- item1' + chr(10) + '- item2')
     '<ul><li>item1</li><li>item2</li></ul>'
-    >>> compile('# Hello\n**bold** and *italic*')
+    >>> compile('# Hello' + chr(10) + '**bold** and *italic*')
     '<h1>Hello</h1><p><strong>bold</strong> and <em>italic</em></p>'
-    >>> compile('para1\n\npara2')
+    >>> compile('para1' + chr(10) + chr(10) + 'para2')
     '<p>para1</p><p>para2</p>'
     >>> compile('')
     ''
@@ -139,28 +141,24 @@ def compile(markdown):
     while i < len(lines):
         line = lines[i]
 
-        # Skip empty lines
         if not line.strip():
             i += 1
             continue
 
-        # Check for heading
         heading = compile_heading(line)
         if heading:
             result.append(heading)
             i += 1
             continue
 
-        # Check for list
         if is_list_item(line):
             list_items = []
             while i < len(lines) and is_list_item(lines[i]):
                 list_items.append(compile_list_item(lines[i]))
                 i += 1
-            result.append(f'<ul>{"".join(list_items)}</ul>')
+            result.append('<ul>{0}</ul>'.format(''.join(list_items)))
             continue
 
-        # Otherwise it's a paragraph
         para_lines = []
         while i < len(lines) and lines[i].strip():
             current = lines[i]
@@ -172,7 +170,7 @@ def compile(markdown):
         if para_lines:
             para_text = ' '.join(para_lines)
             para_text = compile_inline(para_text)
-            result.append(f'<p>{para_text}</p>')
+            result.append('<p>{0}</p>'.format(para_text))
 
     return ''.join(result)
 

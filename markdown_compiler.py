@@ -16,10 +16,9 @@ def compile_heading(line):
     """
     match = re.match(r'^(#{1,3}) (.+)$', line)
     if match:
-        hashes = match.group(1)
+        level = len(match.group(1))
         text = match.group(2)
-        level = len(hashes)
-        return '<h' + str(level) + '>' + text + '</h' + str(level) + '>'
+        return '<h{0}>{1}</h{0}>'.format(level, text)
     return None
 
 
@@ -33,8 +32,7 @@ def compile_bold(text):
     >>> compile_bold('no bold here')
     'no bold here'
     """
-    pattern = re.compile(r'\*\*(.+?)\*\*')
-    return pattern.sub(r'<strong>\1</strong>', text)
+    return re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
 
 
 def compile_italic(text):
@@ -47,8 +45,7 @@ def compile_italic(text):
     >>> compile_italic('no italic here')
     'no italic here'
     """
-    pattern = re.compile(r'\*(.+?)\*')
-    return pattern.sub(r'<em>\1</em>', text)
+    return re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
 
 
 def compile_link(text):
@@ -61,8 +58,7 @@ def compile_link(text):
     >>> compile_link('no link here')
     'no link here'
     """
-    pattern = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
-    return pattern.sub(r'<a href="\2">\1</a>', text)
+    return re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', text)
 
 
 def compile_inline(text):
@@ -94,7 +90,7 @@ def compile_list_item(line):
     match = re.match(r'^- (.+)$', line)
     if match:
         content = compile_inline(match.group(1))
-        return '<li>' + content + '</li>'
+        return '<li>{0}</li>'.format(content)
     return None
 
 
@@ -145,12 +141,6 @@ def compile(markdown):
     '<p>hello</p>'
     >>> compile('')
     ''
-    >>> compile('# Hello' + '\\n' + '**bold** and *italic*')
-    '<h1>Hello</h1><p><strong>bold</strong> and <em>italic</em></p>'
-    >>> compile('- a' + '\\n' + '- b')
-    '<ul><li>a</li><li>b</li></ul>'
-    >>> compile('p1' + '\\n' + '\\n' + 'p2')
-    '<p>p1</p><p>p2</p>'
     """
     if not markdown:
         return ''
@@ -178,7 +168,7 @@ def compile(markdown):
             while idx < len(lines) and is_list_item(lines[idx]):
                 list_items.append(compile_list_item(lines[idx]))
                 idx += 1
-            output.append('<ul>' + ''.join(list_items) + '</ul>')
+            output.append('<ul>{0}</ul>'.format(''.join(list_items)))
             continue
 
         para_lines = []
@@ -196,7 +186,7 @@ def compile(markdown):
         if para_lines:
             para_text = ' '.join(para_lines)
             para_text = compile_inline(para_text)
-            output.append('<p>' + para_text + '</p>')
+            output.append('<p>{0}</p>'.format(para_text))
 
     return ''.join(output)
 

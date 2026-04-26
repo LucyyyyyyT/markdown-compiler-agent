@@ -106,7 +106,7 @@ def is_list_item(line):
 
 
 def compile(markdown):
-    """Convert markdown text to HTML.
+    r"""Convert markdown text to HTML.
 
     >>> compile('# Hello')
     '<h1>Hello</h1>'
@@ -120,11 +120,11 @@ def compile(markdown):
     '<p><em>italic</em></p>'
     >>> compile('[link](url)')
     '<p><a href="url">link</a></p>'
-    >>> compile('- item1\\n- item2')
+    >>> compile('- item1\n- item2')
     '<ul><li>item1</li><li>item2</li></ul>'
-    >>> compile('# Hello\\n**bold** and *italic*')
+    >>> compile('# Hello\n**bold** and *italic*')
     '<h1>Hello</h1><p><strong>bold</strong> and <em>italic</em></p>'
-    >>> compile('para1\\n\\npara2')
+    >>> compile('para1\n\npara2')
     '<p>para1</p><p>para2</p>'
     >>> compile('')
     ''

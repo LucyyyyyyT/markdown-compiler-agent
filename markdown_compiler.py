@@ -108,9 +108,7 @@ def is_list_item(line):
     >>> is_list_item('')
     False
     """
-    if line.startswith('- '):
-        return True
-    return False
+    return line.startswith('- ')
 
 
 def is_heading(line):
@@ -123,9 +121,7 @@ def is_heading(line):
     >>> is_heading('')
     False
     """
-    if re.match(r'^#{1,3} ', line):
-        return True
-    return False
+    return bool(re.match(r'^#{1,3} ', line))
 
 
 def compile(markdown):
@@ -149,10 +145,16 @@ def compile(markdown):
     '<p>hello</p>'
     >>> compile('')
     ''
+    >>> compile('# Hello' + '\\n' + '**bold** and *italic*')
+    '<h1>Hello</h1><p><strong>bold</strong> and <em>italic</em></p>'
+    >>> compile('- a' + '\\n' + '- b')
+    '<ul><li>a</li><li>b</li></ul>'
+    >>> compile('p1' + '\\n' + '\\n' + 'p2')
+    '<p>p1</p><p>p2</p>'
     """
-    if markdown == '':
+    if not markdown:
         return ''
-    if markdown.strip() == '':
+    if not markdown.strip():
         return ''
 
     lines = markdown.split('\n')
@@ -162,18 +164,15 @@ def compile(markdown):
     while idx < len(lines):
         line = lines[idx]
 
-        # Skip blank lines
-        if line.strip() == '':
+        if not line.strip():
             idx += 1
             continue
 
-        # Heading
         if is_heading(line):
             output.append(compile_heading(line))
             idx += 1
             continue
 
-        # List
         if is_list_item(line):
             list_items = []
             while idx < len(lines) and is_list_item(lines[idx]):
@@ -182,11 +181,10 @@ def compile(markdown):
             output.append('<ul>' + ''.join(list_items) + '</ul>')
             continue
 
-        # Paragraph
         para_lines = []
         while idx < len(lines):
             current = lines[idx]
-            if current.strip() == '':
+            if not current.strip():
                 break
             if is_heading(current):
                 break
@@ -195,7 +193,7 @@ def compile(markdown):
             para_lines.append(current)
             idx += 1
 
-        if len(para_lines) > 0:
+        if para_lines:
             para_text = ' '.join(para_lines)
             para_text = compile_inline(para_text)
             output.append('<p>' + para_text + '</p>')
